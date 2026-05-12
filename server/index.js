@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import { ZodError } from 'zod'
 import { logger } from './lib/logger.js'
 import authRouter from './routes/auth.js'
 import setupRouter from './routes/setup.js'
@@ -22,6 +23,9 @@ app.use('/api/auth', authRouter)
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
 app.use((err, req, res, next) => {
+  if (err instanceof ZodError) {
+    return res.status(400).json({ error: 'Validation failed', details: err.errors })
+  }
   logger.error(err)
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
 })

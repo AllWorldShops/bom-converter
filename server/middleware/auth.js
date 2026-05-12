@@ -1,7 +1,11 @@
 import jwt from 'jsonwebtoken'
 
 export function requireAuth(req, res, next) {
-  const token = req.cookies?.accessToken || req.headers.authorization?.split(' ')[1]
+  const authHeader = req.headers.authorization
+  const token =
+    req.cookies?.accessToken ||
+    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined)
+
   if (!token) return res.status(401).json({ error: 'Authentication required' })
 
   try {

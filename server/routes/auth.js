@@ -14,9 +14,17 @@ function signTokens(user) {
   return { accessToken, refreshToken }
 }
 
+const isProduction = process.env.NODE_ENV === 'production'
+const cookieBase = { httpOnly: true, sameSite: 'lax', secure: isProduction }
+
 function setCookies(res, accessToken, refreshToken) {
-  res.cookie('accessToken', accessToken, { httpOnly: true, sameSite: 'lax', maxAge: 15 * 60 * 1000 })
-  res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 })
+  res.cookie('accessToken', accessToken, { ...cookieBase, maxAge: 15 * 60 * 1000 })
+  res.cookie('refreshToken', refreshToken, { ...cookieBase, maxAge: 7 * 24 * 60 * 60 * 1000 })
+}
+
+function clearCookies(res) {
+  res.clearCookie('accessToken', cookieBase)
+  res.clearCookie('refreshToken', cookieBase)
 }
 
 const loginSchema = z.object({
@@ -49,23 +57,30 @@ router.post('/refresh', async (req, res, next) => {
     const { accessToken, refreshToken } = signTokens(user)
     setCookies(res, accessToken, refreshToken)
     res.json({ user: { id: user.id, username: user.username, email: user.email, role: user.role } })
-  } catch {
-    res.status(401).json({ error: 'Invalid refresh token' })
+  } catch (err) {
+    if (err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ error: 'Invalid refresh token' })
+    }
+    next(err)
   }
 })
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('accessToken')
-  res.clearCookie('refreshToken')
+  clearCookies(res)
   res.json({ success: true })
 })
 
-router.get('/me', requireAuth, async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user.id },
-    select: { id: true, username: true, email: true, role: true },
-  })
-  res.json({ user })
+router.get('/me', requireAuth, async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true, username: true, email: true, role: true },
+    })
+    if (!user) return res.status(401).json({ error: 'User no longer exists' })
+    res.json({ user })
+  } catch (err) {
+    next(err)
+  }
 })
 
 export default router
