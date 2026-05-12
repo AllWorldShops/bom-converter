@@ -5,6 +5,10 @@ import { ZodError } from 'zod'
 import { logger } from './lib/logger.js'
 import authRouter from './routes/auth.js'
 import setupRouter from './routes/setup.js'
+import usersRouter from './routes/users.js'
+import customersRouter from './routes/customers.js'
+import uomRouter from './routes/uomMappings.js'
+import dashboardRouter from './routes/dashboard.js'
 
 const app = express()
 
@@ -19,6 +23,10 @@ app.use(cookieParser())
 
 app.use('/api/setup', setupRouter)
 app.use('/api/auth', authRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/customers', customersRouter)
+app.use('/api/uom-mappings', uomRouter)
+app.use('/api/dashboard', dashboardRouter)
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
