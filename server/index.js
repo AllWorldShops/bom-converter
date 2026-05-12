@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import multer from 'multer'
 import { ZodError } from 'zod'
 import { logger } from './lib/logger.js'
 import authRouter from './routes/auth.js'
@@ -35,6 +36,9 @@ app.use('/api/download', downloadRouter)
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
 app.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError || err.message?.startsWith('Unsupported file type')) {
+    return res.status(400).json({ error: err.message })
+  }
   if (err instanceof ZodError) {
     return res.status(400).json({ error: 'Validation failed', details: err.errors })
   }

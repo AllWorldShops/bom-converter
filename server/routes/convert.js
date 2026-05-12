@@ -18,12 +18,13 @@ const convertSchema = z.object({ customerId: z.string().min(1) })
 
 router.post('/', upload.single('file'), async (req, res, next) => {
   const userId = req.user.id
-  let customerId = null
+  // Best-effort extraction before validation, so FAILED log can reference the customer
+  let customerId = req.body?.customerId ?? null
   let originalFilename = req.file?.originalname || 'unknown'
 
   try {
     const { customerId: cid } = convertSchema.parse(req.body)
-    customerId = cid
+    customerId = cid  // overwrite with validated value
 
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
 
@@ -77,8 +78,8 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     })
   } catch (err) {
     logger.error('Conversion failed:', err)
-    if (userId && customerId) {
-      await prisma.conversionLog.create({
+    if (userId) {
+      prisma.conversionLog.create({
         data: {
           userId,
           customerId,
