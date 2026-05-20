@@ -1,2 +1,5 @@
 [build]
 installCommand = "npm install"
+
+[variables]
+RAILPACK_INSTALL_CMD = "npm install"
