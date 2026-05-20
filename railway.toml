@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-buildCommand = "npm install --include=dev && npm run build && npm run setup"
+buildCommand = "rm -f package-lock.json && npm install --include=dev && npm run build && npm run setup"
 
 [deploy]
 startCommand = "npm start"
