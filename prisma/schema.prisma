@@ -58,12 +58,9 @@ model ManufacturerMapping {
 }
 
 model ProductRegistry {
-  id        String   @id @default(cuid())
-  itemId    String   @unique
-  itemName  String?
-  uom       String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String @id @default(cuid())
+  itemName   String @unique
+  externalId String
 }
 
 model ConversionLog {
