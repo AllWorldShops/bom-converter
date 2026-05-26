@@ -15,6 +15,7 @@ import usersRouter from './routes/users.js'
 import customersRouter from './routes/customers.js'
 import uomRouter from './routes/uomMappings.js'
 import manufacturerRouter from './routes/manufacturerMappings.js'
+import productRegistryRouter from './routes/productRegistry.js'
 import dashboardRouter from './routes/dashboard.js'
 import convertRouter from './routes/convert.js'
 import downloadRouter from './routes/download.js'
@@ -36,6 +37,7 @@ app.use('/api/users', usersRouter)
 app.use('/api/customers', customersRouter)
 app.use('/api/uom-mappings', uomRouter)
 app.use('/api/manufacturer-mappings', manufacturerRouter)
+app.use('/api/product-registry', productRegistryRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/convert', convertRouter)
 app.use('/api/download', downloadRouter)
