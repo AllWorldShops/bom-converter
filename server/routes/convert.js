@@ -32,7 +32,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
       prisma.customer.findUnique({ where: { id: customerId } }),
       prisma.unitOfMeasureMapping.findMany({ where: { customerId } }),
       prisma.manufacturerMapping.findMany(),
-      prisma.productRegistry.findMany({ select: { itemId: true } }),
+      prisma.productRegistry.findMany({ select: { itemName: true, externalId: true } }),
     ])
 
     if (!customer) return res.status(404).json({ error: 'Customer not found' })
@@ -62,13 +62,10 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     const mappedParent = applyMfgMapping(parent)
     const mappedChildren = children.map(applyMfgMapping)
 
-    // Filter out products already in the registry from product-import.xlsx
-    const knownItemIds = new Set(registryItems.map(r => r.itemId))
-    const skipParent = knownItemIds.has(mappedParent.itemId)
-    const filteredChildren = mappedChildren.filter(c => !knownItemIds.has(c.itemId))
-    const skippedProducts = (skipParent ? 1 : 0) + (mappedChildren.length - filteredChildren.length)
+    // Build itemName → externalId lookup from registry
+    const registryMap = new Map(registryItems.map(r => [r.itemName, r.externalId]))
 
-    const productBuffer = generateProductImport(mappedParent, filteredChildren, skipParent)
+    const productBuffer = generateProductImport(mappedParent, mappedChildren, registryMap)
     const bomBuffer = generateBomImport(mappedParent, mappedChildren)
 
     const jobId = uuid()
@@ -77,23 +74,27 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     writeFileSync(path.join(outputDir, 'product-import.xlsx'), productBuffer)
     writeFileSync(path.join(outputDir, 'bom-import.xlsx'), bomBuffer)
 
-    // Auto-register all products discovered in this BOM (fire and forget)
+    // Auto-register new products discovered in this BOM (fire and forget)
+    // For each item: if not in registry, save it with the generated externalId
     const allItems = [mappedParent, ...mappedChildren]
     const seen = new Set()
-    const uniqueItems = allItems.filter(item => {
-      if (seen.has(item.itemId)) return false
-      seen.add(item.itemId)
+    const newItems = allItems.filter(item => {
+      if (seen.has(item.itemName) || registryMap.has(item.itemName)) return false
+      seen.add(item.itemName)
       return true
     })
-    prisma.$transaction(
-      uniqueItems.map(item =>
-        prisma.productRegistry.upsert({
-          where: { itemId: item.itemId },
-          update: { itemName: item.itemName || null, uom: item.uom || null },
-          create: { itemId: item.itemId, itemName: item.itemName || null, uom: item.uom || null },
-        })
-      )
-    ).catch(err => logger.error('Registry auto-upsert failed:', err))
+    if (newItems.length > 0) {
+      prisma.$transaction(
+        newItems.map(item =>
+          prisma.productRegistry.create({
+            data: {
+              itemName: item.itemName,
+              externalId: `__export__.product_template_${item.itemId}`,
+            },
+          })
+        )
+      ).catch(err => logger.error('Registry auto-register failed:', err))
+    }
 
     await prisma.conversionLog.create({
       data: {
@@ -111,7 +112,6 @@ router.post('/', upload.single('file'), async (req, res, next) => {
       jobId,
       productsConverted: children.length + 1,
       bomsConverted: 1,
-      skippedProducts,
       downloadUrls: {
         productImport: `/api/download/${jobId}/product-import.xlsx`,
         bomImport: `/api/download/${jobId}/bom-import.xlsx`,

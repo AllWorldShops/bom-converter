@@ -1,6 +1,6 @@
 import xlsx from 'xlsx'
 
-export function generateProductImport(parent, children, skipParent = false) {
+export function generateProductImport(parent, children, registryMap = new Map()) {
   const headers = [
     'External ID',
     'Name',
@@ -16,8 +16,9 @@ export function generateProductImport(parent, children, skipParent = false) {
   ]
 
   function toRow(item) {
+    const externalId = registryMap.get(item.itemName) || `__export__.product_template_${item.itemId}`
     return [
-      `__export__.product_template_${item.itemId}`,
+      externalId,
       item.itemId,
       item.itemId,
       item.uom,
@@ -31,10 +32,7 @@ export function generateProductImport(parent, children, skipParent = false) {
     ]
   }
 
-  const productRows = []
-  if (!skipParent) productRows.push(toRow(parent))
-  productRows.push(...children.map(toRow))
-  const data = [headers, ...productRows]
+  const data = [headers, toRow(parent), ...children.map(toRow)]
 
   const ws = xlsx.utils.aoa_to_sheet(data)
   const wb = xlsx.utils.book_new()
