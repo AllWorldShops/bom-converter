@@ -13,6 +13,7 @@ import Customers from '@/pages/settings/Customers'
 import UnitOfMeasure from '@/pages/settings/UnitOfMeasure'
 import ManufacturerMappings from '@/pages/settings/ManufacturerMappings'
 import Advanced from '@/pages/settings/Advanced'
+import ProductRegistry from '@/pages/settings/ProductRegistry'
 import api from '@/lib/api'
 
 export default function App() {
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="/settings/customers" element={<Customers />} />
             <Route path="/settings/unit-of-measure" element={<UnitOfMeasure />} />
             <Route path="/settings/manufacturer-mappings" element={<ManufacturerMappings />} />
+            <Route path="/settings/product-registry" element={<ProductRegistry />} />
             <Route path="/settings/advanced" element={<Advanced />} />
           </Route>
         </Route>
