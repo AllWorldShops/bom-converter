@@ -7,7 +7,7 @@ import { requireAdmin } from '../middleware/adminOnly.js'
 import { importUpload } from '../middleware/upload.js'
 
 const router = Router()
-router.use(requireAuth, requireAdmin)
+router.use(requireAuth)
 
 const mappingSchema = z.object({
   customerManufacturer: z.string().min(1, 'Customer manufacturer name is required'),

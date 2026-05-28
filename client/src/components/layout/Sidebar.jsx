@@ -44,43 +44,43 @@ export default function Sidebar() {
           <RefreshCw size={18} /> Convert BOM
         </NavLink>
 
-        {isAdmin && (
-          <div className="pt-4">
-            <button
-              onClick={() => setSettingsOpen(o => !o)}
-              className={cn(navItemBase, 'w-full justify-between', inactiveClass)}
-            >
-              <span className="flex items-center gap-3">
-                <Settings size={18} /> Settings
-              </span>
-              <ChevronDown
-                size={14}
-                className={cn('transition-transform', settingsOpen && 'rotate-180')}
-              />
-            </button>
+        <div className="pt-4">
+          <button
+            onClick={() => setSettingsOpen(o => !o)}
+            className={cn(navItemBase, 'w-full justify-between', inactiveClass)}
+          >
+            <span className="flex items-center gap-3">
+              <Settings size={18} /> Settings
+            </span>
+            <ChevronDown
+              size={14}
+              className={cn('transition-transform', settingsOpen && 'rotate-180')}
+            />
+          </button>
 
-            {settingsOpen && (
-              <div className="ml-4 mt-1 space-y-1">
-                {[
+          {settingsOpen && (
+            <div className="ml-4 mt-1 space-y-1">
+              {[
+                { to: '/settings/customers', icon: Building2, label: 'Customers' },
+                { to: '/settings/unit-of-measure', icon: Ruler, label: 'Unit of Measure' },
+                { to: '/settings/manufacturer-mappings', icon: Factory, label: 'Manufacturers' },
+                { to: '/settings/product-registry', icon: Package, label: 'Product Registry' },
+                ...(isAdmin ? [
                   { to: '/settings/users', icon: Users, label: 'Users' },
-                  { to: '/settings/customers', icon: Building2, label: 'Customers' },
-                  { to: '/settings/unit-of-measure', icon: Ruler, label: 'Unit of Measure' },
-                  { to: '/settings/manufacturer-mappings', icon: Factory, label: 'Manufacturers' },
-                  { to: '/settings/product-registry', icon: Package, label: 'Product Registry' },
                   { to: '/settings/advanced', icon: SlidersHorizontal, label: 'Advanced' },
-                ].map(({ to, icon: Icon, label }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    className={({ isActive }) => cn(navItemBase, isActive ? activeClass : inactiveClass)}
-                  >
-                    <Icon size={16} /> {label}
-                  </NavLink>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                ] : []),
+              ].map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) => cn(navItemBase, isActive ? activeClass : inactiveClass)}
+                >
+                  <Icon size={16} /> {label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="p-4 border-t border-navy-700">

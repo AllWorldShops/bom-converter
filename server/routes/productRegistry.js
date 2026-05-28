@@ -7,7 +7,7 @@ import { requireAdmin } from '../middleware/adminOnly.js'
 import { importUpload } from '../middleware/upload.js'
 
 const router = Router()
-router.use(requireAuth, requireAdmin)
+router.use(requireAuth)
 
 const registrySchema = z.object({
   itemName: z.string().min(1, 'Item Name is required'),

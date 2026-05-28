@@ -46,12 +46,12 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/convert" element={<Convert />} />
+          <Route path="/settings/customers" element={<Customers />} />
+          <Route path="/settings/unit-of-measure" element={<UnitOfMeasure />} />
+          <Route path="/settings/manufacturer-mappings" element={<ManufacturerMappings />} />
+          <Route path="/settings/product-registry" element={<ProductRegistry />} />
           <Route element={<AdminRoute />}>
             <Route path="/settings/users" element={<Users />} />
-            <Route path="/settings/customers" element={<Customers />} />
-            <Route path="/settings/unit-of-measure" element={<UnitOfMeasure />} />
-            <Route path="/settings/manufacturer-mappings" element={<ManufacturerMappings />} />
-            <Route path="/settings/product-registry" element={<ProductRegistry />} />
             <Route path="/settings/advanced" element={<Advanced />} />
           </Route>
         </Route>
