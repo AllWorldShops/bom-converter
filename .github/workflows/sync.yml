@@ -3,11 +3,13 @@ name: Suresh to All World Shops Auto-deploy
 on:
   push:
     branches:
-      - main  # If your main branch is called 'master', change 'main' to 'master'
+      - main  
 
 jobs:
   sync-repo:
     runs-on: ubuntu-latest
+    # 👇 Add this line so it ONLY runs in Account A and ignores Account B
+    if: github.repository == 'suresh6634/your-repo-name' 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,11 +22,10 @@ jobs:
           key: ${{ secrets.SURESH_TO_AWS_GITHUB_AUTO_DEPLOY }}
           name: id_rsa
           if_key_exists: fail
-          known_hosts: unnecessary  # 👈 This tells the action it's okay to skip checking it
+          known_hosts: unnecessary 
 
       - name: Push Changes to Account B
         run: |
           git remote add target git@github.com:AllWorldShops/bom-converter.git
-          
           git push target refs/heads/*:refs/heads/* --force
           git push target refs/tags/*:refs/tags/* --force
