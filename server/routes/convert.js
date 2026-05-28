@@ -62,7 +62,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     const mappedParent = applyMfgMapping(parent)
     const mappedChildren = children.map(applyMfgMapping)
 
-    // Build itemName → externalId lookup from registry
+    // Build partNumber → externalId lookup from registry (itemName column stores part numbers)
     const registryMap = new Map(registryItems.map(r => [r.itemName, r.externalId]))
 
     const productBuffer = generateProductImport(mappedParent, mappedChildren, registryMap)
@@ -80,7 +80,7 @@ router.post('/', upload.single('file'), async (req, res, next) => {
       const allItems = [mappedParent, ...mappedChildren]
       const seen = new Set()
       for (const item of allItems) {
-        const name = item.itemName?.trim()
+        const name = item.itemId?.trim()
         if (!name || seen.has(name) || registryMap.has(name)) continue
         seen.add(name)
         try {

@@ -16,7 +16,7 @@ export function generateProductImport(parent, children, registryMap = new Map())
   ]
 
   function toRow(item) {
-    const externalId = registryMap.get(item.itemName) || `__export__.product_template_${item.itemId}`
+    const externalId = registryMap.get(item.itemId) || `__export__.product_template_${item.itemId}`
     return [
       externalId,
       item.itemId,
