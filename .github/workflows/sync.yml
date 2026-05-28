@@ -18,7 +18,10 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SURESH_TO_AWS_GITHUB_AUTO_DEPLOY }}
-          known_hosts: ${{ secrets.SURESH_TO_AWS_GITHUB_AUTO_DEPLOY }} # This auto-scans github.com for you
+          name: id_rsa
+          if_key_exists: fail
+          # Note: shimataro/ssh-key-action configures github.com out of the box,
+          # so we removed the duplicate 'known_hosts' key that was causing issues.
 
       - name: Push Changes to Account B
         run: |
