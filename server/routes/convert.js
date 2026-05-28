@@ -75,26 +75,28 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     writeFileSync(path.join(outputDir, 'bom-import.xlsx'), bomBuffer)
 
     // Auto-register new products discovered in this BOM (fire and forget)
-    // For each item: if not in registry, save it with the generated externalId
-    const allItems = [mappedParent, ...mappedChildren]
-    const seen = new Set()
-    const newItems = allItems.filter(item => {
-      if (seen.has(item.itemName) || registryMap.has(item.itemName)) return false
-      seen.add(item.itemName)
-      return true
-    })
-    if (newItems.length > 0) {
-      prisma.$transaction(
-        newItems.map(item =>
-          prisma.productRegistry.create({
-            data: {
-              itemName: item.itemName,
+    // Only saves items not already in registry; each upsert is independent so one failure won't block others
+    ;(async () => {
+      const allItems = [mappedParent, ...mappedChildren]
+      const seen = new Set()
+      for (const item of allItems) {
+        const name = item.itemName?.trim()
+        if (!name || seen.has(name) || registryMap.has(name)) continue
+        seen.add(name)
+        try {
+          await prisma.productRegistry.upsert({
+            where: { itemName: name },
+            update: {},  // already in registry — no change needed
+            create: {
+              itemName: name,
               externalId: `__export__.product_template_${item.itemId}`,
             },
           })
-        )
-      ).catch(err => logger.error('Registry auto-register failed:', err))
-    }
+        } catch (err) {
+          logger.error(`Registry auto-register failed for "${name}":`, err)
+        }
+      }
+    })()
 
     await prisma.conversionLog.create({
       data: {
