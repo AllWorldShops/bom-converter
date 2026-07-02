@@ -14,6 +14,9 @@ import UnitOfMeasure from '@/pages/settings/UnitOfMeasure'
 import ManufacturerMappings from '@/pages/settings/ManufacturerMappings'
 import Advanced from '@/pages/settings/Advanced'
 import ProductRegistry from '@/pages/settings/ProductRegistry'
+import RfqDashboard from '@/pages/pm/RfqDashboard'
+import SourceRawMaterialsDashboard from '@/pages/source-raw-materials/Dashboard'
+import SourceRawMaterialsSearch from '@/pages/source-raw-materials/Search'
 import api from '@/lib/api'
 
 export default function App() {
@@ -46,6 +49,9 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/convert" element={<Convert />} />
+          <Route path="/pm/rfq-dashboard" element={<RfqDashboard />} />
+          <Route path="/source-raw-materials/dashboard" element={<SourceRawMaterialsDashboard />} />
+          <Route path="/source-raw-materials/search" element={<SourceRawMaterialsSearch />} />
           <Route path="/settings/customers" element={<Customers />} />
           <Route path="/settings/unit-of-measure" element={<UnitOfMeasure />} />
           <Route path="/settings/manufacturer-mappings" element={<ManufacturerMappings />} />
