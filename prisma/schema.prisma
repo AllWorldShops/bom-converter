@@ -76,3 +76,37 @@ model ConversionLog {
   user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
   customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 }
+
+// RFQ dashboard: a full snapshot of the "PENDING PROJECT" master sheet, replaced wholesale on each
+// sync (the Excel file is the source of truth; diffing ~900 rows isn't worth it).
+// status: COMPLETED | PENDING_REVIEW | OTHER | NONE  (derived from the row's fill color)
+model RfqProject {
+  id                 String    @id @default(cuid())
+  rowNumber          Int
+  projectId          String
+  customer           String    @default("")
+  linkSource         String    @default("")
+  pic                String    @default("")
+  projectType        String    @default("")
+  notes              String    @default("")
+  rfqDueDateRaw      String    @default("")
+  rfqDueDate         DateTime?
+  rfqReceivedDateRaw String    @default("")
+  sofeaDateRaw       String    @default("")
+  submissionDateRaw  String    @default("")
+  status             String
+  syncedAt           DateTime  @default(now())
+
+  @@index([status])
+}
+
+model RfqSync {
+  id            String   @id @default(cuid())
+  syncedAt      DateTime @default(now())
+  source        String   // 'upload' | 'webhook'
+  total         Int      @default(0)
+  completed     Int      @default(0)
+  pendingReview Int      @default(0)
+  other         Int      @default(0)
+  none          Int      @default(0)
+}

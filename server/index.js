@@ -19,6 +19,7 @@ import productRegistryRouter from './routes/productRegistry.js'
 import dashboardRouter from './routes/dashboard.js'
 import convertRouter from './routes/convert.js'
 import downloadRouter from './routes/download.js'
+import rfqRouter from './routes/rfq.js'
 
 const app = express()
 
@@ -41,6 +42,7 @@ app.use('/api/product-registry', productRegistryRouter)
 app.use('/api/dashboard', dashboardRouter)
 app.use('/api/convert', convertRouter)
 app.use('/api/download', downloadRouter)
+app.use('/api/rfq', rfqRouter)
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
