@@ -69,8 +69,12 @@ function buildUserPrompt(rawText, rows) {
 
 async function callClaude(systemPrompt, userPrompt) {
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
+    model: 'claude-sonnet-5',
+    max_tokens: 16000,
+    // Disable thinking: this is deterministic JSON extraction, and it keeps
+    // content[0] a text block (Sonnet 5 defaults thinking ON, which would make
+    // content[0] a thinking block and break the parsing below).
+    thinking: { type: 'disabled' },
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   })

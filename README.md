@@ -37,7 +37,7 @@ Customers send BOMs in their own formats. This tool uses Claude AI to read any B
 | Frontend | React 18, Vite, Tailwind CSS, react-hook-form, Zod |
 | Backend | Node.js, Express, Prisma ORM |
 | Database | SQLite (self-hosted) |
-| AI | Anthropic Claude (`claude-sonnet-4-20250514`) |
+| AI | Anthropic Claude (`claude-sonnet-5`) |
 | Auth | JWT access + refresh tokens, HTTP-only cookies |
 | Excel output | xlsx (SheetJS) |
 

@@ -47,7 +47,7 @@ together via `concurrently` in dev, served as one process in production (`server
 - **Conversion pipeline** (`routes/convert.js`), the core flow:
   1. `services/fileParser.js` — Excel/PDF/image → rows + raw text
   2. `services/aiExtractor.js` — sends file content + the customer's saved format instructions +
-     UOM mappings to Claude (`claude-sonnet-4-20250514`), gets back structured JSON
+     UOM mappings to Claude (`claude-sonnet-5`), gets back structured JSON
      (`{ parent, children }`); retries once with a stricter prompt if the response isn't valid JSON
   3. UOM and manufacturer-name mappings are applied in `convert.js` (not in the AI step) — customer
      UOM strings are converted via `UnitOfMeasureMapping`, manufacturer names via the global,
