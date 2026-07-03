@@ -77,8 +77,12 @@ function normalizePart(part) {
 export async function searchParts(searchToken, opts = {}) {
   const apiKey = process.env.TRUSTEDPARTS_API_KEY
   const companyId = process.env.TRUSTEDPARTS_COMPANY_ID
-  if (!apiKey || !companyId) {
-    const err = new Error('TrustedParts API is not configured. Set TRUSTEDPARTS_API_KEY and TRUSTEDPARTS_COMPANY_ID.')
+  const missing = [
+    !apiKey && 'TRUSTEDPARTS_API_KEY',
+    !companyId && 'TRUSTEDPARTS_COMPANY_ID',
+  ].filter(Boolean)
+  if (missing.length) {
+    const err = new Error(`TrustedParts API is not configured. Missing env var(s): ${missing.join(', ')}. Set these as Railway Variables on this service/environment.`)
     err.status = 503
     throw err
   }
