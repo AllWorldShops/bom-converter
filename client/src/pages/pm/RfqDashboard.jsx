@@ -111,6 +111,10 @@ export default function RfqDashboard() {
   const completionRate = counts.total ? Math.round((counts.COMPLETED / counts.total) * 100) : 0
   const pct = n => (counts.total ? (n / counts.total) * 100 : 0)
 
+  // The file auto-syncs nightly at 10pm; if the freshest sync is older than ~26h, that run likely failed.
+  const hoursSinceSync = meta.lastSyncedAt ? (Date.now() - new Date(meta.lastSyncedAt).getTime()) / 3.6e6 : Infinity
+  const stale = rows.length > 0 && hoursSinceSync > 26
+
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase()
     return rows.filter(r => {
@@ -158,6 +162,11 @@ export default function RfqDashboard() {
               ? `Last synced ${new Date(meta.lastSyncedAt).toLocaleString()}${meta.lastSource ? ` (${meta.lastSource})` : ''}`
               : 'Not synced yet'}
           </p>
+          {stale && (
+            <p className="mt-1.5 inline-flex items-center gap-1.5 text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md px-2 py-1">
+              <AlertTriangle size={13} /> Data may be stale — the nightly 10pm sync hasn’t run in over a day.
+            </p>
+          )}
         </div>
         <div>
           <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={onSyncFile} className="hidden" />
