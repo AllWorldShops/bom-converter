@@ -20,6 +20,7 @@ import dashboardRouter from './routes/dashboard.js'
 import convertRouter from './routes/convert.js'
 import downloadRouter from './routes/download.js'
 import rfqRouter from './routes/rfq.js'
+import partSourcingRouter from './routes/partSourcing.js'
 import { startRfqScheduler } from './services/rfqGraphSync.js'
 
 const app = express()
@@ -44,6 +45,7 @@ app.use('/api/dashboard', dashboardRouter)
 app.use('/api/convert', convertRouter)
 app.use('/api/download', downloadRouter)
 app.use('/api/rfq', rfqRouter)
+app.use('/api/part-sourcing', partSourcingRouter)
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
 
