@@ -68,7 +68,7 @@ export default function SourceRawMaterialsSearch() {
       })
       setChat(c => ({
         ...c,
-        messages: [...history, { role: 'assistant', content: data.reply, sources: data.sources }],
+        messages: [...history, { role: 'assistant', content: data.message, stockists: data.stockists }],
         loading: false,
       }))
     } catch (err) {
@@ -346,26 +346,55 @@ function ChatTab({ part, chat, onSend, onMount }) {
 }
 
 function ChatBubble({ message }) {
-  const isUser = message.role === 'user'
+  if (message.role === 'user') {
+    return (
+      <div className="flex justify-end">
+        <div className="max-w-[80%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap bg-electric-500/20 text-slate-100">
+          {message.content}
+        </div>
+      </div>
+    )
+  }
+
+  const cards = message.stockists || []
   return (
-    <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
-      <div className={cn(
-        'max-w-[80%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap',
-        isUser ? 'bg-electric-500/20 text-slate-100' : 'bg-navy-900 border border-navy-600 text-slate-200'
-      )}>
-        {message.content}
-        {!isUser && message.sources?.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-navy-700 space-y-1">
-            <p className="text-xs text-slate-500 uppercase tracking-wide">Sources</p>
-            {message.sources.slice(0, 6).map((s, i) => (
-              <a key={i} href={s.url} target="_blank" rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-electric-300 hover:text-electric-400 truncate">
-                <ExternalLink size={11} className="shrink-0" /> <span className="truncate">{s.title || s.url}</span>
-              </a>
-            ))}
-          </div>
+    <div className="space-y-3">
+      {message.content && (
+        <div className="max-w-[90%] rounded-xl px-4 py-2.5 text-sm whitespace-pre-wrap bg-navy-900 border border-navy-600 text-slate-200">
+          {message.content}
+        </div>
+      )}
+      {cards.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {cards.map((s, i) => <StockistCard key={i} s={s} />)}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StockistCard({ s }) {
+  return (
+    <div className="bg-navy-900 border border-navy-600 rounded-xl p-4 flex flex-col gap-2 hover:border-electric-500/50 transition-colors">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Store size={16} className="text-electric-300 shrink-0" />
+          <p className="font-semibold text-slate-100 truncate">{s.name}</p>
+        </div>
+        {s.stock && (
+          <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 whitespace-nowrap">{s.stock}</span>
         )}
       </div>
+      {(s.price || s.note) && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          {s.price && <span className="text-slate-200">{s.price}</span>}
+          {s.note && <span className="text-xs text-amber-400/90">{s.note}</span>}
+        </div>
+      )}
+      <a href={s.url} target="_blank" rel="noreferrer"
+        className="mt-auto inline-flex items-center gap-1 text-xs text-electric-300 hover:text-electric-400">
+        <ExternalLink size={12} className="shrink-0" /> View listing
+      </a>
     </div>
   )
 }
