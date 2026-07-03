@@ -19,3 +19,6 @@ client/node_modules/.vite/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Local BOM test fixtures (customer data)
+/test/

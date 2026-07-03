@@ -8,7 +8,7 @@ Built for Pecko, a Singapore wire harness manufacturer.
 
 ## What it does
 
-Customers send BOMs in their own formats. This tool uses Claude AI to read any BOM file, normalise it against your customer-specific rules and unit-of-measure mappings, and produce two ready-to-import Excel files:
+Customers send BOMs in their own fixed Excel formats. This tool reads each file by the customer's saved column mapping, normalises it against your unit-of-measure and manufacturer mappings, and produces two ready-to-import Excel files (deterministic — no AI, no API key):
 
 | Output file | Odoo module |
 |---|---|
@@ -19,8 +19,8 @@ Customers send BOMs in their own formats. This tool uses Claude AI to read any B
 
 ## Features
 
-- **AI extraction** — Claude reads Excel, PDF, and image BOMs; handles any column layout
-- **Per-customer format rules** — describe each customer's BOM layout once; AI follows it on every conversion
+- **Deterministic extraction** — reads each customer's fixed Excel layout by column mapping; no AI, no per-conversion cost
+- **Per-customer column mapping** — set each customer's Excel column layout once; the converter follows it every time
 - **UOM mapping** — map customer unit names (EA, MTR, FT) to your ERP units with conversion factors, importable via CSV/Excel
 - **Manufacturer name normalisation** — map customer shorthand (ZEBRA, TYCO ELECTRONICS) to your exact ERP names, global across all customers, importable via CSV/Excel
 - **Odoo v18 BOM format** — correct column headers, `__export__.mrp_bom_` ID format, "Manufacture this product" BOM type
@@ -37,7 +37,7 @@ Customers send BOMs in their own formats. This tool uses Claude AI to read any B
 | Frontend | React 18, Vite, Tailwind CSS, react-hook-form, Zod |
 | Backend | Node.js, Express, Prisma ORM |
 | Database | SQLite (self-hosted) |
-| AI | Anthropic Claude (`claude-sonnet-5`) |
+| Extraction | Deterministic column-mapping (no AI) |
 | Auth | JWT access + refresh tokens, HTTP-only cookies |
 | Excel output | xlsx (SheetJS) |
 
@@ -48,7 +48,6 @@ Customers send BOMs in their own formats. This tool uses Claude AI to read any B
 ### Prerequisites
 
 - Node.js ≥ 18
-- An [Anthropic API key](https://console.anthropic.com/)
 
 ### 1 — Clone and install
 
@@ -70,7 +69,6 @@ Open `.env` and fill in:
 DATABASE_URL="file:./prisma/pecko.db"
 JWT_SECRET=<run: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))">
 JWT_REFRESH_SECRET=<run the same command again for a different secret>
-ANTHROPIC_API_KEY=sk-ant-...
 PORT=3001
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
@@ -240,7 +238,6 @@ git push -u origin main
 | `DATABASE_URL` | ✅ | `file:./prisma/pecko.db` for SQLite · or PostgreSQL connection string |
 | `JWT_SECRET` | ✅ | Long random string for signing access tokens |
 | `JWT_REFRESH_SECRET` | ✅ | Separate long random string for refresh tokens |
-| `ANTHROPIC_API_KEY` | ✅ | Your Claude API key from console.anthropic.com |
 | `PORT` | — | Server port (default `3001`) |
 | `NODE_ENV` | — | `development` or `production` |
 | `CLIENT_URL` | ✅ | Frontend origin for CORS — must match the URL users open |
@@ -268,7 +265,7 @@ pecko-backoffice/
 ├── server/                        Express API
 │   ├── routes/                    One file per resource
 │   ├── services/
-│   │   ├── aiExtractor.js         Claude prompt engineering + JSON parsing
+│   │   ├── bomExtractor.js        Deterministic column-mapping extraction
 │   │   ├── excelGenerator.js      Odoo-format Excel output (SheetJS)
 │   │   └── fileParser.js          Excel / PDF / image → structured text
 │   └── middleware/                JWT auth, multer upload, admin guard
@@ -292,8 +289,8 @@ Customer BOM file  (Excel / PDF / image)
   fileParser.js        Extracts row data and raw text from the file
         │
         ▼
-  aiExtractor.js       Sends file content + customer format instructions to Claude.
-                       Claude returns a structured JSON object with parent assembly
+  bomExtractor.js      Reads cells by the customer's fixed column mapping and returns
+                       a structured object with the parent assembly
                        and all child components.
         │
         ▼

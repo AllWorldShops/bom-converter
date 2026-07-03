@@ -5,9 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 Internal tool for Pecko (Singapore wire harness manufacturer) that converts customer Bill of Materials
-files (Excel/PDF/image) into Odoo v18-ready import files (`product-import.xlsx` + `bom-import.xlsx`),
-using Claude to do the extraction. This repo is being expanded into a broader "Back Office" app beyond
-just BOM conversion — new modules should follow the same route/service/page conventions below.
+Excel files into Odoo v18-ready import files (`product-import.xlsx` + `bom-import.xlsx`). Extraction is
+**deterministic** — each customer sends a fixed Excel layout, so the app reads cells by a per-customer
+column mapping (no AI / no Anthropic API key; a future optional AI mode is anticipated). This repo is
+being expanded into a broader "Back Office" app beyond just BOM conversion — new modules should follow
+the same route/service/page conventions below.
 
 ## Commands
 
@@ -44,20 +46,22 @@ together via `concurrently` in dev, served as one process in production (`server
   `middleware/auth.js`). `client/src/lib/api.js` has an axios interceptor that auto-refreshes on 401
   and retries the original request once — it explicitly skips intercepting `/auth/*` calls to avoid a
   deadlock (refresh-of-refresh).
-- **Conversion pipeline** (`routes/convert.js`), the core flow:
-  1. `services/fileParser.js` — Excel/PDF/image → rows + raw text
-  2. `services/aiExtractor.js` — sends file content + the customer's saved format instructions +
-     UOM mappings to Claude (`claude-sonnet-5`), gets back structured JSON
-     (`{ parent, children }`); retries once with a stricter prompt if the response isn't valid JSON
-  3. UOM and manufacturer-name mappings are applied in `convert.js` (not in the AI step) — customer
-     UOM strings are converted via `UnitOfMeasureMapping`, manufacturer names via the global,
-     case-insensitive `ManufacturerMapping` lookup
+- **Conversion pipeline** (`routes/convert.js`), the core flow — **deterministic, no AI/API key**:
+  1. `services/fileParser.js` — Excel → rows (array-of-arrays via SheetJS). PDF/image still parse to
+     raw text but the extractor below is Excel-only.
+  2. `services/bomExtractor.js` — reads cells by the customer's fixed column mapping
+     (`Customer.columnMapping` JSON, or `DEFAULT_MAPPING` = the standard K&S A–H layout when null) and
+     returns `{ parent, children }`. Each customer sends a fixed layout, so this is pure column lookup.
+  3. UOM and manufacturer-name mappings are applied in `convert.js` — customer UOM strings converted via
+     `UnitOfMeasureMapping` (replace unit + multiply quantity by `conversionFactor`), manufacturer names
+     via the global, case-insensitive `ManufacturerMapping` lookup
   4. `services/excelGenerator.js` — writes the two Odoo v18 import files (SheetJS)
   5. New items not already in `ProductRegistry` are auto-registered fire-and-forget (doesn't block the
      response); `ProductRegistry` maps part numbers to Odoo external IDs for re-imports
   6. Every attempt (success or failure) writes a `ConversionLog` row
-- **Data model** (`prisma/schema.prisma`, SQLite): `User`, `Customer` (holds free-text BOM format
-  instructions used in the AI prompt), `UnitOfMeasureMapping` (per-customer), `ManufacturerMapping`
+- **Data model** (`prisma/schema.prisma`, SQLite): `User`, `Customer` (`columnMapping` JSON = which Excel
+  columns map to which BOM fields; `description` is now just free-text notes), `UnitOfMeasureMapping`
+  (per-customer), `ManufacturerMapping`
   (global), `ProductRegistry`, `ConversionLog`. SQLite has no native enums — `Role`
   (`ADMIN`/`USER`) and `ConversionStatus` (`SUCCESS`/`FAILED`) are plain strings enforced by Zod at
   the API layer, not the DB.

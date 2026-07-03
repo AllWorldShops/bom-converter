@@ -7,7 +7,7 @@ import prisma from '../lib/prisma.js'
 import { requireAuth } from '../middleware/auth.js'
 import { upload } from '../middleware/upload.js'
 import { parseFile } from '../services/fileParser.js'
-import { extractBom } from '../services/aiExtractor.js'
+import { extractBom } from '../services/bomExtractor.js'
 import { generateProductImport, generateBomImport } from '../services/excelGenerator.js'
 import { logger } from '../lib/logger.js'
 
@@ -38,29 +38,35 @@ router.post('/', upload.single('file'), async (req, res, next) => {
     if (!customer) return res.status(404).json({ error: 'Customer not found' })
 
     logger.info(`Parsing file: ${req.file.path}`)
-    const { rows, rawText } = await parseFile(req.file.path, req.file.mimetype)
+    const { rows } = await parseFile(req.file.path, req.file.mimetype)
 
-    logger.info('Calling AI extractor...')
-    const bomData = await extractBom(rawText, rows, customer, uomMappings)
+    logger.info('Extracting BOM by column mapping...')
+    const { parent, children } = extractBom(rows, customer)
 
-    const { parent, children } = bomData
-    if (!parent || !Array.isArray(children) || children.length === 0) {
-      throw new Error('AI could not extract valid BOM data from the file')
+    // UOM mapping (per-customer): replace the customer's unit with the Pecko unit and
+    // scale quantity by the conversion factor. Case-insensitive.
+    const uomLookup = new Map(uomMappings.map(m => [m.customerUOM.toUpperCase(), m]))
+    function applyUomMapping(item) {
+      if (!item.uom) return item
+      const m = uomLookup.get(item.uom.toUpperCase())
+      if (!m) return item
+      const quantity = typeof item.quantity === 'number' ? item.quantity * m.conversionFactor : item.quantity
+      return { ...item, uom: m.peckoUOM, quantity }
     }
 
-    // Build a case-insensitive lookup map: uppercase(customerManufacturer) → peckoManufacturer
+    // Manufacturer mapping (global): case-insensitive customerManufacturer → peckoManufacturer
     const mfgLookup = new Map(
       manufacturerMappings.map(m => [m.customerManufacturer.toUpperCase(), m.peckoManufacturer])
     )
-
     function applyMfgMapping(item) {
       if (!item.manufacturer) return item
       const mapped = mfgLookup.get(item.manufacturer.toUpperCase())
       return mapped ? { ...item, manufacturer: mapped } : item
     }
 
-    const mappedParent = applyMfgMapping(parent)
-    const mappedChildren = children.map(applyMfgMapping)
+    const mapItem = item => applyMfgMapping(applyUomMapping(item))
+    const mappedParent = mapItem(parent)
+    const mappedChildren = children.map(mapItem)
 
     // Build partNumber → externalId lookup from registry (itemName column stores part numbers)
     const registryMap = new Map(registryItems.map(r => [r.itemName, r.externalId]))
