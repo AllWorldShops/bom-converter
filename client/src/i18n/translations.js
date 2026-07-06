@@ -81,6 +81,24 @@ export const translations = {
       title: 'Source Raw Materials Dashboard',
       body: "Requirements are still being defined. This page will be built out once they're ready.",
     },
+    convert: {
+      status0: 'Uploading file...', status1: 'Analysing BOM structure...', status2: 'Mapping columns...', status3: 'Generating export files...',
+      complete: 'Conversion Complete!', extracted: '{p} products extracted  |  {b} BOM lines extracted',
+      productFile: 'Product Import File', bomFile: 'BOM Import File', convertAnother: 'Convert Another File',
+      failed: 'Conversion Failed', failedRetry: 'Conversion failed. Please try again.', tryAgain: 'Try Again',
+      step1: 'Step 1 — Select Customer', chooseCustomer: 'Choose a customer...',
+      step2: 'Step 2 — Upload BOM File', dropFile: 'Drop file here or click to browse',
+      fileHint: 'Excel, PDF, PNG, JPG — max 20MB', convertBtn: "Convert to Pecko's Format",
+    },
+    setup: {
+      title: 'Create Admin Account', subtitle: 'First-time setup — this screen appears only once.',
+      fullName: 'Full Name', namePlaceholder: 'Admin Name', email: 'Email', password: 'Password',
+      passwordPlaceholder: 'Min 8 characters', creating: 'Creating...', create: 'Create Admin Account',
+      failed: 'Setup failed', nameMin: 'Name must be at least 2 characters',
+      emailRequired: 'Email is required', emailInvalid: 'Enter a valid email address',
+      passwordMin: 'Password must be at least 8 characters',
+    },
+    advanced: { title: 'Advanced Settings', body: 'Additional configuration options will be available here in a future update.' },
   },
   zh: {
     common: {
@@ -161,5 +179,23 @@ export const translations = {
       title: '原材料采购仪表盘',
       body: '需求仍在确定中。功能将在需求明确后逐步完善。',
     },
+    convert: {
+      status0: '正在上传文件...', status1: '正在分析 BOM 结构...', status2: '正在映射列...', status3: '正在生成导出文件...',
+      complete: '转换完成！', extracted: '提取了 {p} 个产品  |  {b} 条 BOM 明细',
+      productFile: '产品导入文件', bomFile: 'BOM 导入文件', convertAnother: '转换另一个文件',
+      failed: '转换失败', failedRetry: '转换失败，请重试。', tryAgain: '重试',
+      step1: '第 1 步 — 选择客户', chooseCustomer: '请选择客户...',
+      step2: '第 2 步 — 上传 BOM 文件', dropFile: '拖放文件到此处或点击浏览',
+      fileHint: 'Excel、PDF、PNG、JPG — 最大 20MB', convertBtn: '转换为 Pecko 格式',
+    },
+    setup: {
+      title: '创建管理员账户', subtitle: '首次设置 — 此界面仅出现一次。',
+      fullName: '姓名', namePlaceholder: '管理员姓名', email: '邮箱', password: '密码',
+      passwordPlaceholder: '至少 8 个字符', creating: '创建中...', create: '创建管理员账户',
+      failed: '设置失败', nameMin: '姓名至少需要 2 个字符',
+      emailRequired: '请输入邮箱', emailInvalid: '请输入有效的邮箱地址',
+      passwordMin: '密码至少需要 8 个字符',
+    },
+    advanced: { title: '高级设置', body: '更多配置选项将在未来版本中提供。' },
   },
 }
