@@ -18,53 +18,55 @@ import {
 // A node with no `to` and no `children` renders as an inert "coming soon" row.
 // `adminOnly` groups are stripped entirely for non-admin users.
 // `company` groups are shown only to users of that company (admins see all).
+// `label` is kept stable (React key + expand-state); `labelKey` is the i18n key
+// the Sidebar renders (falling back to `label` for untranslated nodes like PEI/PM/PKS).
 export const NAV_TREE = [
   { label: 'PEI', company: 'PEI' },
   {
     label: 'PM',
     company: 'PM',
-    children: [{ label: 'RFQ Dashboard', to: '/pm/rfq-dashboard', icon: FileText }],
+    children: [{ label: 'RFQ Dashboard', labelKey: 'nav.rfqDashboard', to: '/pm/rfq-dashboard', icon: FileText }],
   },
   { label: 'PKS', company: 'PKS' },
   {
-    label: 'Common',
+    label: 'Common', labelKey: 'nav.common',
     children: [
       {
-        label: 'BOM Converter',
+        label: 'BOM Converter', labelKey: 'nav.bomConverter',
         children: [
-          { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-          { label: 'BOM Converter', to: '/convert', icon: RefreshCw },
+          { label: 'Dashboard', labelKey: 'nav.dashboard', to: '/dashboard', icon: LayoutDashboard },
+          { label: 'BOM Converter', labelKey: 'nav.convert', to: '/convert', icon: RefreshCw },
         ],
       },
       {
-        label: 'Source Raw Materials',
+        label: 'Source Raw Materials', labelKey: 'nav.sourceRawMaterials',
         children: [
-          { label: 'Dashboard', to: '/source-raw-materials/dashboard', icon: Boxes },
-          { label: 'Search', to: '/source-raw-materials/search', icon: Search },
+          { label: 'Dashboard', labelKey: 'nav.dashboard', to: '/source-raw-materials/dashboard', icon: Boxes },
+          { label: 'Search', labelKey: 'nav.searchLeaf', to: '/source-raw-materials/search', icon: Search },
         ],
       },
     ],
   },
   {
-    label: 'Settings',
+    label: 'Settings', labelKey: 'nav.settings',
     icon: Settings,
     children: [
       {
-        label: 'BOM Converter',
+        label: 'BOM Converter', labelKey: 'nav.bomConverter',
         children: [
-          { label: 'Customers', to: '/settings/customers', icon: Building2 },
-          { label: 'Unit of Measure', to: '/settings/unit-of-measure', icon: Ruler },
-          { label: 'Manufacturers', to: '/settings/manufacturer-mappings', icon: Factory },
-          { label: 'Product Registry', to: '/settings/product-registry', icon: Package },
+          { label: 'Customers', labelKey: 'nav.customers', to: '/settings/customers', icon: Building2 },
+          { label: 'Unit of Measure', labelKey: 'nav.unitOfMeasure', to: '/settings/unit-of-measure', icon: Ruler },
+          { label: 'Manufacturers', labelKey: 'nav.manufacturers', to: '/settings/manufacturer-mappings', icon: Factory },
+          { label: 'Product Registry', labelKey: 'nav.productRegistry', to: '/settings/product-registry', icon: Package },
         ],
       },
       {
-        label: 'Admin',
+        label: 'Admin', labelKey: 'nav.admin',
         icon: ShieldCheck,
         adminOnly: true,
         children: [
-          { label: 'Users', to: '/settings/users', icon: Users },
-          { label: 'Advanced', to: '/settings/advanced', icon: SlidersHorizontal },
+          { label: 'Users', labelKey: 'nav.users', to: '/settings/users', icon: Users },
+          { label: 'Advanced', labelKey: 'nav.advanced', to: '/settings/advanced', icon: SlidersHorizontal },
         ],
       },
     ],

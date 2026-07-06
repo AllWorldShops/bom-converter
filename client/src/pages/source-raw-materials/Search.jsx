@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { useLang } from '@/i18n/LanguageContext'
 import {
   Search as SearchIcon, ExternalLink, FileText, Loader2, AlertCircle,
   PackageSearch, ShieldCheck, Cpu, ListTree, Store, MessageSquare, Info, Send, SearchX,
@@ -32,6 +33,7 @@ export default function SourceRawMaterialsSearch() {
   const [tab, setTab] = useState('overview') // overview | specs | distributors | chat
   const [chat, setChat] = useState({ messages: [], loading: false, error: '' })
   const chatStartedRef = useRef(false)
+  const { t } = useLang()
 
   async function handleSearch(e) {
     e?.preventDefault()
@@ -48,7 +50,7 @@ export default function SourceRawMaterialsSearch() {
       setResult(data)
       setPhase('done')
     } catch (err) {
-      setError(err.response?.data?.error || 'Search failed. Please try again.')
+      setError(err.response?.data?.error || t('sourcing.searchFailed'))
       setPhase('error')
     }
   }
@@ -74,7 +76,7 @@ export default function SourceRawMaterialsSearch() {
         loading: false,
       }))
     } catch (err) {
-      setChat(c => ({ ...c, loading: false, error: err.response?.data?.error || 'Chat failed. Please try again.' }))
+      setChat(c => ({ ...c, loading: false, error: err.response?.data?.error || t('chat.chatFailed') }))
     }
   }
 
@@ -95,7 +97,7 @@ export default function SourceRawMaterialsSearch() {
             autoFocus
             value={term}
             onChange={e => setTerm(e.target.value)}
-            placeholder="Enter a manufacturer part number, e.g. 193643-1"
+            placeholder={t('sourcing.placeholder')}
             className="w-full bg-navy-800 border border-navy-600 rounded-xl pl-11 pr-4 py-3.5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-electric-400 focus:border-transparent"
           />
         </div>
@@ -105,7 +107,7 @@ export default function SourceRawMaterialsSearch() {
           className="px-6 rounded-xl bg-electric-500 hover:bg-electric-400 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold flex items-center gap-2 transition-colors"
         >
           {phase === 'loading' ? <Loader2 size={18} className="animate-spin" /> : <SearchIcon size={18} />}
-          Search
+          {t('common.search')}
         </button>
       </form>
 
@@ -113,7 +115,7 @@ export default function SourceRawMaterialsSearch() {
       {phase === 'idle' && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <PackageSearch size={48} className="text-slate-600 mb-4" />
-          <p className="text-slate-400 max-w-sm">Search live distributor stock and pricing from TrustedParts.com by manufacturer part number.</p>
+          <p className="text-slate-400 max-w-sm">{t('sourcing.idle')}</p>
         </div>
       )}
 
@@ -126,8 +128,8 @@ export default function SourceRawMaterialsSearch() {
       {phase === 'done' && !part && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <PackageSearch size={48} className="text-slate-600 mb-4" />
-          <p className="text-slate-300 font-medium">No matches for “{result.query}”.</p>
-          <p className="text-slate-500 text-sm mt-1">Check the part number and try again.</p>
+          <p className="text-slate-300 font-medium">{t('sourcing.noMatches', { q: result.query })}</p>
+          <p className="text-slate-500 text-sm mt-1">{t('sourcing.checkPartNumber')}</p>
         </div>
       )}
 
@@ -139,13 +141,13 @@ export default function SourceRawMaterialsSearch() {
           <div>
             <div className="flex gap-1 border-b border-navy-600">
               <TabButton active={tab === 'overview'} onClick={() => setTab('overview')} icon={Info}
-                label="Overview" />
+                label={t('sourcing.tabOverview')} />
               <TabButton active={tab === 'specs'} onClick={() => setTab('specs')} icon={ListTree}
-                label="Specifications" count={part.specifications.length} />
+                label={t('sourcing.tabSpecs')} count={part.specifications.length} />
               <TabButton active={tab === 'distributors'} onClick={() => setTab('distributors')} icon={Store}
-                label="Distributors" count={part.offerCount} />
+                label={t('sourcing.tabDistributors')} count={part.offerCount} />
               <TabButton active={tab === 'chat'} onClick={() => setTab('chat')} icon={MessageSquare}
-                label="Ask AI" />
+                label={t('sourcing.tabAskAi')} />
             </div>
 
             <div className="pt-5">
@@ -177,6 +179,7 @@ function TabButton({ active, onClick, icon: Icon, label, count }) {
 }
 
 function PartHeader({ part }) {
+  const { t } = useLang()
   return (
     <div className="bg-navy-800 border border-navy-600 rounded-xl p-6 flex flex-wrap items-start gap-6">
       <div className="w-20 h-20 rounded-lg bg-navy-900 border border-navy-600 flex items-center justify-center shrink-0 overflow-hidden">
@@ -188,30 +191,30 @@ function PartHeader({ part }) {
       <div className="flex-1 min-w-[240px]">
         <div className="flex items-center gap-3 flex-wrap">
           <h2 className="text-2xl font-bold text-slate-100">{part.partNumber}</h2>
-          <span className="text-slate-400">by {part.manufacturer}</span>
+          <span className="text-slate-400">{t('sourcing.by')} {part.manufacturer}</span>
         </div>
         {part.description && <p className="text-slate-400 mt-1">{part.description}</p>}
         <div className="flex items-center gap-4 mt-3 flex-wrap">
           {part.productUrl && (
             <a href={part.productUrl} target="_blank" rel="noreferrer"
               className="inline-flex items-center gap-1 text-electric-300 hover:text-electric-400 text-sm">
-              <ExternalLink size={14} /> Part Details
+              <ExternalLink size={14} /> {t('sourcing.partDetails')}
             </a>
           )}
           {part.datasheetUrl && (
             <a href={part.datasheetUrl} target="_blank" rel="noreferrer"
               className="inline-flex items-center gap-1 text-electric-300 hover:text-electric-400 text-sm">
-              <FileText size={14} /> Datasheet
+              <FileText size={14} /> {t('sourcing.datasheet')}
             </a>
           )}
-          {part.lifecycleRisk && <span className="text-xs text-slate-500">Lifecycle: {part.lifecycleRisk}</span>}
-          {part.isAffectedByTariff && <span className="text-xs text-amber-400">Tariff-affected</span>}
+          {part.lifecycleRisk && <span className="text-xs text-slate-500">{t('sourcing.lifecycle', { v: part.lifecycleRisk })}</span>}
+          {part.isAffectedByTariff && <span className="text-xs text-amber-400">{t('sourcing.tariff')}</span>}
         </div>
       </div>
 
       {part.priceRange && (
         <div className="text-right shrink-0">
-          <p className="text-xs text-slate-500 uppercase tracking-wide">Price range</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wide">{t('sourcing.priceRange')}</p>
           <p className="text-lg font-semibold text-slate-100 mt-1">
             {money(part.priceRange.min, part.priceRange.currency)} – {money(part.priceRange.max, part.priceRange.currency)}
           </p>
@@ -222,15 +225,16 @@ function PartHeader({ part }) {
 }
 
 function OverviewTab({ part, onViewDistributors }) {
+  const { t } = useLang()
   const inStock = part.offers.filter(o => o.stock.quantity > 0).length
   const rohsCompliant = part.offers.some(o => o.rohs === true)
   const topSpecs = part.specifications.slice(0, 6)
 
   const stats = [
-    { label: 'Best price', value: part.priceRange ? money(part.priceRange.min, part.priceRange.currency) : '—', sub: 'lowest unit price' },
-    { label: 'Distributors', value: part.offerCount, sub: `${inStock} with stock` },
-    { label: 'RoHS', value: rohsCompliant ? 'Compliant' : '—', sub: rohsCompliant ? 'per distributor data' : 'not reported' },
-    { label: 'Lifecycle', value: part.lifecycleRisk || 'Active', sub: part.isAffectedByTariff ? 'tariff-affected' : 'risk status' },
+    { label: t('sourcing.bestPrice'), value: part.priceRange ? money(part.priceRange.min, part.priceRange.currency) : '—', sub: t('sourcing.lowestUnit') },
+    { label: t('sourcing.distributors'), value: part.offerCount, sub: t('sourcing.withStock', { n: inStock }) },
+    { label: t('sourcing.rohs'), value: rohsCompliant ? t('sourcing.compliant') : '—', sub: rohsCompliant ? t('sourcing.perDistributor') : t('sourcing.notReported') },
+    { label: t('sourcing.lifecycleLabel'), value: part.lifecycleRisk || t('sourcing.lifecycleActive'), sub: part.isAffectedByTariff ? t('sourcing.tariff') : t('sourcing.riskStatus') },
   ]
 
   return (
@@ -247,9 +251,9 @@ function OverviewTab({ part, onViewDistributors }) {
 
       <div className="bg-navy-800 border border-navy-600 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-slate-200">Key specifications</h3>
+          <h3 className="font-semibold text-slate-200">{t('sourcing.keySpecs')}</h3>
           <button onClick={onViewDistributors} className="text-sm text-electric-300 hover:text-electric-400">
-            View {part.offerCount} distributor offers →
+            {t('sourcing.viewOffers', { n: part.offerCount })}
           </button>
         </div>
         {topSpecs.length ? (
@@ -262,7 +266,7 @@ function OverviewTab({ part, onViewDistributors }) {
             ))}
           </dl>
         ) : (
-          <p className="text-slate-500 text-sm">No specifications available for this part.</p>
+          <p className="text-slate-500 text-sm">{t('sourcing.noSpecs')}</p>
         )}
       </div>
     </div>
@@ -270,8 +274,9 @@ function OverviewTab({ part, onViewDistributors }) {
 }
 
 function SpecsTab({ specifications }) {
+  const { t } = useLang()
   if (!specifications.length) {
-    return <p className="text-slate-500 text-sm py-8 text-center">No specifications available for this part.</p>
+    return <p className="text-slate-500 text-sm py-8 text-center">{t('sourcing.noSpecs')}</p>
   }
   return (
     <div className="bg-navy-800 border border-navy-600 rounded-xl overflow-hidden">
@@ -288,6 +293,7 @@ function SpecsTab({ specifications }) {
 }
 
 function ChatTab({ part, chat, onSend, onMount }) {
+  const { t } = useLang()
   const [input, setInput] = useState('')
   const bottomRef = useRef(null)
 
@@ -309,18 +315,18 @@ function ChatTab({ part, chat, onSend, onMount }) {
     <div className="bg-navy-800 border border-navy-600 rounded-xl flex flex-col h-[32rem]">
       <div className="px-5 py-3 border-b border-navy-600 flex items-center gap-2">
         <MessageSquare size={16} className="text-electric-300" />
-        <h3 className="font-semibold text-slate-200">Ask AI about {part.partNumber}</h3>
-        <span className="text-xs text-slate-500 ml-auto">Independent stockists · electronics parts only</span>
+        <h3 className="font-semibold text-slate-200">{t('chat.askAbout', { part: part.partNumber })}</h3>
+        <span className="text-xs text-slate-500 ml-auto">{t('chat.tagline')}</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         {visible.length === 0 && !chat.loading && (
-          <p className="text-slate-500 text-sm text-center py-8">Searching for independent stockists…</p>
+          <p className="text-slate-500 text-sm text-center py-8">{t('chat.searching')}</p>
         )}
         {visible.map((m, i) => <ChatBubble key={i} message={m} />)}
         {chat.loading && (
           <div className="flex items-center gap-2 text-slate-400 text-sm">
-            <Loader2 size={16} className="animate-spin" /> Searching &amp; thinking…
+            <Loader2 size={16} className="animate-spin" /> {t('chat.searchingThinking')}
           </div>
         )}
         {chat.error && (
@@ -335,7 +341,7 @@ function ChatTab({ part, chat, onSend, onMount }) {
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
-          placeholder={`Ask about ${part.partNumber} — stockists, specs, availability…`}
+          placeholder={t('chat.placeholder', { part: part.partNumber })}
           className="flex-1 bg-navy-900 border border-navy-600 rounded-lg px-4 py-2.5 text-slate-100 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-electric-400"
         />
         <button type="submit" disabled={chat.loading || !input.trim()}
@@ -380,18 +386,18 @@ function ChatBubble({ message }) {
 }
 
 function NoResults() {
+  const { t } = useLang()
   return (
     <div className="bg-navy-900 border border-navy-600 rounded-xl p-8 flex flex-col items-center text-center">
       <SearchX size={32} className="text-slate-600 mb-3" />
-      <p className="text-slate-300 font-medium">No independent stockists found</p>
-      <p className="text-slate-500 text-sm mt-1 max-w-xs">
-        The web search returned no independent stockist listings for this part. Try a different part number, or check the Distributors tab.
-      </p>
+      <p className="text-slate-300 font-medium">{t('chat.noStockistsTitle')}</p>
+      <p className="text-slate-500 text-sm mt-1 max-w-xs">{t('chat.noStockistsBody')}</p>
     </div>
   )
 }
 
 function StockistCard({ s }) {
+  const { t } = useLang()
   return (
     <div className="bg-navy-900 border border-navy-600 rounded-xl p-4 flex flex-col gap-2 hover:border-electric-500/50 transition-colors">
       <div className="flex items-start justify-between gap-2">
@@ -411,19 +417,20 @@ function StockistCard({ s }) {
       )}
       <a href={s.url} target="_blank" rel="noreferrer"
         className="mt-auto inline-flex items-center gap-1 text-xs text-electric-300 hover:text-electric-400">
-        <ExternalLink size={12} className="shrink-0" /> View listing
+        <ExternalLink size={12} className="shrink-0" /> {t('chat.viewListing')}
       </a>
     </div>
   )
 }
 
 function OffersTable({ offers, qty, setQty }) {
+  const { t } = useLang()
   return (
     <div className="bg-navy-800 border border-navy-600 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 border-b border-navy-600">
-        <h3 className="font-semibold text-slate-200">Distributors</h3>
+        <h3 className="font-semibold text-slate-200">{t('sourcing.distributors')}</h3>
         <label className="flex items-center gap-2 text-sm text-slate-400">
-          Qty
+          {t('sourcing.qty')}
           <input
             type="number" min={1} value={qty}
             onChange={e => setQty(Math.max(1, Number(e.target.value) || 1))}
@@ -436,14 +443,14 @@ function OffersTable({ offers, qty, setQty }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-navy-600">
-              <th className="px-5 py-3 font-medium">Distributor</th>
-              <th className="px-3 py-3 font-medium">MOQ</th>
-              <th className="px-3 py-3 font-medium">Pkg</th>
-              <th className="px-3 py-3 font-medium">Availability</th>
-              <th className="px-3 py-3 font-medium">RoHS</th>
-              <th className="px-3 py-3 font-medium">Order pricing</th>
-              <th className="px-3 py-3 font-medium text-right">Total @ {qty}</th>
-              <th className="px-5 py-3 font-medium text-right">Buy</th>
+              <th className="px-5 py-3 font-medium">{t('sourcing.colDistributor')}</th>
+              <th className="px-3 py-3 font-medium">{t('sourcing.colMoq')}</th>
+              <th className="px-3 py-3 font-medium">{t('sourcing.colPkg')}</th>
+              <th className="px-3 py-3 font-medium">{t('sourcing.colAvailability')}</th>
+              <th className="px-3 py-3 font-medium">{t('sourcing.colRohs')}</th>
+              <th className="px-3 py-3 font-medium">{t('sourcing.colOrderPricing')}</th>
+              <th className="px-3 py-3 font-medium text-right">{t('sourcing.colTotal', { n: qty })}</th>
+              <th className="px-5 py-3 font-medium text-right">{t('sourcing.colBuy')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-navy-700">
@@ -461,12 +468,12 @@ function OffersTable({ offers, qty, setQty }) {
                   <td className="px-3 py-3 text-slate-400">{o.packaging || '—'}</td>
                   <td className="px-3 py-3 text-slate-400 max-w-[180px]">
                     {o.stock.quantity > 0
-                      ? <span className="text-emerald-400">{o.stock.quantity.toLocaleString()} in stock</span>
-                      : <span>{o.stock.availability || 'Out of stock'}</span>}
+                      ? <span className="text-emerald-400">{t('sourcing.inStock', { n: o.stock.quantity.toLocaleString() })}</span>
+                      : <span>{o.stock.availability || t('sourcing.outOfStock')}</span>}
                   </td>
                   <td className="px-3 py-3">
                     {o.rohs === true ? <ShieldCheck size={16} className="text-emerald-400" />
-                      : o.rohs === false ? <span className="text-xs text-slate-500">No</span>
+                      : o.rohs === false ? <span className="text-xs text-slate-500">{t('sourcing.no')}</span>
                       : <span className="text-xs text-slate-600">—</span>}
                   </td>
                   <td className="px-3 py-3">
@@ -482,7 +489,7 @@ function OffersTable({ offers, qty, setQty }) {
                   </td>
                   <td className="px-3 py-3 text-right whitespace-nowrap">
                     {belowMoq
-                      ? <span className="text-xs text-slate-500">min. not met</span>
+                      ? <span className="text-xs text-slate-500">{t('sourcing.minNotMet')}</span>
                       : <span className="font-semibold text-slate-100">{money(total, o.currency)}</span>}
                   </td>
                   <td className="px-5 py-3 text-right">
@@ -494,7 +501,7 @@ function OffersTable({ offers, qty, setQty }) {
                       {o.buyUrl && (
                         <a href={o.buyUrl} target="_blank" rel="noreferrer"
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-electric-500/20 hover:bg-electric-500/30 text-electric-300 text-xs font-medium whitespace-nowrap">
-                          Buy <ExternalLink size={12} />
+                          {t('sourcing.buy')} <ExternalLink size={12} />
                         </a>
                       )}
                     </div>

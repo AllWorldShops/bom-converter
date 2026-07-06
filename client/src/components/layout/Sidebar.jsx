@@ -2,6 +2,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { LogOut, ChevronDown, Circle } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLang } from '@/i18n/LanguageContext'
 import { cn } from '@/lib/utils'
 import { NAV_TREE } from '@/config/navigation'
 
@@ -24,7 +25,9 @@ function collectPaths(node, acc = []) {
 }
 
 function NavNode({ node, depth, pathname, expanded, toggle }) {
+  const { t } = useLang()
   const Icon = node.icon
+  const label = node.labelKey ? t(node.labelKey) : node.label
   const hasChildren = node.children?.length > 0
   const isEmptyGroup = !node.to && !hasChildren
 
@@ -32,12 +35,12 @@ function NavNode({ node, depth, pathname, expanded, toggle }) {
     return (
       <NavLink
         to={node.to}
-        title={node.label}
+        title={label}
         className={({ isActive }) => cn(navItemBase, isActive ? activeClass : inactiveClass)}
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
         {Icon ? <Icon size={16} className="shrink-0" /> : <Circle size={6} className="ml-1 mr-1 fill-current shrink-0" />}
-        <span className="truncate">{node.label}</span>
+        <span className="truncate">{label}</span>
       </NavLink>
     )
   }
@@ -50,8 +53,8 @@ function NavNode({ node, depth, pathname, expanded, toggle }) {
         title="Coming soon"
       >
         {Icon ? <Icon size={16} className="shrink-0" /> : <Circle size={6} className="ml-1 mr-1 fill-current shrink-0" />}
-        <span className="truncate">{node.label}</span>
-        <span className="ml-auto text-xs italic text-slate-700 shrink-0">soon</span>
+        <span className="truncate">{label}</span>
+        <span className="ml-auto text-xs italic text-slate-700 shrink-0">{t('common.comingSoon')}</span>
       </div>
     )
   }
@@ -61,13 +64,13 @@ function NavNode({ node, depth, pathname, expanded, toggle }) {
     <div>
       <button
         onClick={() => toggle(node.label + depth)}
-        title={node.label}
+        title={label}
         className={cn(navItemBase, 'w-full justify-between', inactiveClass)}
         style={{ paddingLeft: `${12 + depth * 16}px` }}
       >
         <span className="flex items-center gap-3 min-w-0">
           {Icon ? <Icon size={16} className="shrink-0" /> : <Circle size={6} className="fill-current shrink-0" />}
-          <span className="truncate">{node.label}</span>
+          <span className="truncate">{label}</span>
         </span>
         <ChevronDown size={14} className={cn('transition-transform shrink-0', isOpen && 'rotate-180')} />
       </button>
@@ -91,6 +94,7 @@ function NavNode({ node, depth, pathname, expanded, toggle }) {
 
 export default function Sidebar() {
   const { user, logout } = useAuth()
+  const { t } = useLang()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const isAdmin = user?.role === 'ADMIN'
@@ -132,8 +136,8 @@ export default function Sidebar() {
   return (
     <aside className="w-64 min-h-screen bg-navy-900 border-r border-navy-700 flex flex-col">
       <div className="p-6 border-b border-navy-700">
-        <p className="text-xs text-slate-500 uppercase tracking-widest font-mono">Pecko</p>
-        <h1 className="text-lg font-bold text-slate-100 mt-1">Back Office</h1>
+        <p className="text-xs text-slate-500 uppercase tracking-widest font-mono">{t('brand.org')}</p>
+        <h1 className="text-lg font-bold text-slate-100 mt-1">{t('brand.app')}</h1>
       </div>
 
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -163,7 +167,7 @@ export default function Sidebar() {
           onClick={handleLogout}
           className={cn(navItemBase, 'w-full', inactiveClass)}
         >
-          <LogOut size={16} /> Sign Out
+          <LogOut size={16} /> {t('common.signOut')}
         </button>
       </div>
     </aside>
